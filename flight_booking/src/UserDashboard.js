@@ -82,10 +82,10 @@ class UserDashboard extends Component{
           )
         })
       }
-
       
+      //Set Minimum Date in Date Calender
     currentDateHandle = ()=>{
-      //Date format : "2021-12-13"
+      //Date format :  '2021-12-13'
       var month = new Date().getMonth()+1
       return new Date().getFullYear()+'-'+month+'-'+new Date().getDate();
     }
