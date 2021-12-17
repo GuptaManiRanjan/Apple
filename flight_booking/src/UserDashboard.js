@@ -85,7 +85,7 @@ class UserDashboard extends Component{
 
       
     currentDateHandle = ()=>{
-      //Date formate : "2021-12-13"
+      //Date format : "2021-12-13"
       var month = new Date().getMonth()+1
       return new Date().getFullYear()+'-'+month+'-'+new Date().getDate();
     }
