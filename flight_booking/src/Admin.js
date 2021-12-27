@@ -1,16 +1,19 @@
-import React, {Component, useState} from 'react';
+import React, {Component} from 'react';
 import {NavLink } from 'react-router-dom';
 import axios from 'axios';
+import {getAdminAPI} from './Common';
 import './App.css'; 
 
 class Admin extends Component {
-
-     
+    
+  API_ADMIN =getAdminAPI();
     constructor(props){
         super(props) 
         this.state = {
+            update:false,
             showing:true,
             showingflight:false,
+            id:'',
             flightList:[],
             airlineName:'',
             flightNumber:'',
@@ -25,6 +28,7 @@ class Admin extends Component {
             mealType:''
         }
     }
+    
     cityList = [
         { label: "Delhi", value: "Delhi" },
         { label: "Bengaluru", value: "Bengaluru" },
@@ -36,7 +40,7 @@ class Admin extends Component {
         { label: "Darbhanga", value: "Darbhanga" },
         { label: "Lucknow", value: "Lucknow" },
         { label: "Hyderabad", value: "Hyderabad" }
-    ]
+    ] 
     mealList = [
         { label: "VEG", value: "VEG" },
         { label: "Non-VEG", value: "Non-VEG" },
@@ -95,12 +99,38 @@ class Admin extends Component {
           else if(this.destination===this.source){
             alert("Source and Destination city are same....");
           }
-          else if(this.totalSeats<1){
-            alert("Total Seats are invalid....");
+          else if(this.totalSeats<1 || this.totalSeats>101){
+            alert("Total Seats are invalid, It can be 1 to 100 only ...");
           }
-          else{
+          else if(this.id!=='' || this.update===true){
             this.setState({showing: false})
-            axios.post('http://localhost:7071/flight/airline/addFlight',{ 
+            axios.post(this.API_ADMIN+'flight/airline/addFlight',{ 
+            id:this.id,
+            airlineName: this.airlineName,
+            flightNumber: this.flightNumber,
+            totalSeats: this.totalSeats,
+            destination: this.destination,
+            departureTime: this.departureTime,
+            arrivalTime: this.arrivalTime,
+            source: this.source,
+            duration: this.duration,
+            flightDate: this.flightDate,
+            ticketPrice: this.ticketPrice,
+            mealType: this.mealType,
+            status: '1'
+          }).then(response => {
+          alert(response.data);
+          this.getFlightList();
+        }).catch(error => {
+        if (error.response.status === 401)
+            console.log(error.response.data.message);
+        else
+            console.log("Something went wrong. Please try again later.");
+        });
+        }
+          else{ alert("Add")
+            this.setState({showing: false})
+            axios.post(this.API_ADMIN+'flight/airline/addFlight',{ 
             airlineName: this.airlineName,
             flightNumber: this.flightNumber,
             totalSeats: this.totalSeats,
@@ -115,7 +145,7 @@ class Admin extends Component {
             status: '1'
         }).then(response => {
           alert(response.data);
-          this. getFlightList();
+          this.getFlightList();
         }).catch(error => {
         if (error.response.status === 401)
             console.log(error.response.data.message);
@@ -123,7 +153,7 @@ class Admin extends Component {
             console.log("Something went wrong. Please try again later.");
         });
         } 
-        
+        this.setState({update: false })
     }
 
     renderTableHeader = () => {
@@ -154,16 +184,29 @@ class Admin extends Component {
         })
       }
 
-      updateFlight=(e)=>{
-          alert("Update is under maintenance....");
+      updateFlight=(e)=>{        
+          this.setState({showing: true,showingflight:false,update:true})
+          this.airlineName=e.airlineName;
+          this.flightNumber=e.flightNumber;
+          this.totalSeats=e.totalSeats;
+          this.destination=e.destination;
+          this.departureTime=e.departureTime;
+          this.arrivalTime=e.arrivalTime;
+          this.source=e.source;
+          this.duration=e.duration;
+          this.flightDate=e.flightDate;
+          this.ticketPrice=e.ticketPrice;
+          this.mealType=e.mealType;
+          this.id=e.id
+          console.log(e);
       }
 
       cancelFlight=(e)=>{
         var result = window.confirm("Want to cancel?");
         if(result){
-          axios.get('http://localhost:7071/flight/airline/deleteFlight', { params: {id: e.id} })
+          axios.get(this.API_ADMIN+'flight/airline/deleteFlight', { params: {id: e.id} })
           .then(response => {  
-                this. getFlightList();                
+                this.getFlightList();                
                 console.log(response);          
         }).catch(error => {
           
@@ -175,7 +218,7 @@ class Admin extends Component {
 
       getFlightList(event) {
         this.setState({showing: false,showingflight:true })
-        axios.get('http://localhost:7071/flight/airline/flights')
+        axios.get(this.API_ADMIN+'flight/airline/flights')
         .then(response => {       
               const flightList =  response.data;
              if(flightList.length===0){
@@ -193,7 +236,7 @@ class Admin extends Component {
       }
 
 render(){
-    const { showing, showingflight,flightList } = this.state
+    const { showing, showingflight,flightList} = this.state
     return (
         <div>
             <div className="header">
@@ -212,7 +255,7 @@ render(){
                     <div class="form-group">
 
           <label className="label">Airline Name</label>
-          <input onChange={this.handleairlineName} className="input" value={this.airlineName} placeholder="✈" type="text" required/>   
+          <input onChange={this.handleairlineName} className="input" defaultValue={this.airlineName} placeholder="✈" type="text" required/>   
 
         </div>
       </div>
@@ -221,7 +264,7 @@ render(){
         <div class="form-group">
 
            <label className="label">Flight Number</label>
-           <input onChange={this.handleflightNumber} className="input" value={this.flightNumber} placeholder="0000" type="text" />   
+           <input onChange={this.handleflightNumber} className="input" defaultValue={this.flightNumber} placeholder="0000" type="text" />   
 
         </div>
       </div>
@@ -230,7 +273,7 @@ render(){
         <div class="form-group">
 
            <label className="label">Total Seats</label>
-           <input onChange={this.handletotalSeats} className="input" value={this.totalSeats} placeholder="💺" type="number" />   
+           <input onChange={this.handletotalSeats} className="input" defaultValue={this.totalSeats} placeholder="💺" type="number" />   
         </div>
       </div>
                 </div>
@@ -241,7 +284,7 @@ render(){
            <label className="label">Destination</label>
            <select onChange={this.handledestination}>  
            <option value="">Select the Destination City</option>              
-            {this.cityList.map((city) => <option value={city.value}>{city.label}</option>)}
+            {this.cityList.map((city) => <option defaultValue={city.value}>{city.label}</option>)}
           </select>  
         </div>
       </div>
@@ -249,7 +292,7 @@ render(){
       <div class="col-sm-4">
         <div class="form-group">
 					<label className="label">DepartureTime</label>
-                    <input onChange={this.handledepartureTime} className="input" value={this.departureTime} type="time" />   
+                    <input onChange={this.handledepartureTime} className="input" defaultValue={this.departureTime} type="time" />   
         </div>
       </div>
 
@@ -258,7 +301,7 @@ render(){
         <div class="form-group">
 
           <label className="label">ArrivalTime</label>
-                    <input onChange={this.handlearrivalTime} className="input" value={this.arrivalTime} type="time" />   
+                    <input onChange={this.handlearrivalTime} className="input" defaultValue={this.arrivalTime} type="time" />   
 
         </div>
       </div>
@@ -271,7 +314,7 @@ render(){
           <label className="label">Source</label>
           <select onChange={this.handlesource}>  
             <option value="">Select the Source City</option>              
-            {this.cityList.map((city) => <option value={city.value}>{city.label}</option>)}
+            {this.cityList.map((city) => <option defaultValue={city.value}>{city.label}</option>)}
           </select>
         </div>
       </div>
@@ -280,7 +323,7 @@ render(){
         <div class="form-group">
 
           <label className="label">Duration</label>
-                    <input onChange={this.handleduration} className="input" value={this.duration} type="text" />   
+                    <input onChange={this.handleduration} className="input" defaultValue={this.duration} type="text" />   
 
         </div>
       </div>
@@ -297,7 +340,7 @@ render(){
       <div class="col-sm-4">
         <div class="form-group">
           <label className="label">Ticket Price</label>
-          <input onChange={this.handleticketPrice} className="input" value={this.ticketPrice} placeholder="₹" type="number" />   
+          <input onChange={this.handleticketPrice} className="input" defaultValue={this.ticketPrice} placeholder="₹" type="number" />   
         </div>
       </div>
 
@@ -306,7 +349,7 @@ render(){
           <label className="label">Meal Type</label>
           <select onChange={this.handlemealType}>  
           <option value="">Select the Meal Type</option>             
-            {this.mealList.map((city) => <option value={city.value}>{city.label}</option>)}
+            {this.mealList.map((city) => <option defaultValue={city.value}>{city.label}</option>)}
           </select>        
         </div>
       </div>
@@ -316,10 +359,10 @@ render(){
     } 
 
     { showingflight ?
-            <table>
+            <table id='list'>
                  <thead>
                         <tr>                          
-                        {flightList.length>0 && this.renderTableHeader()}
+                        {flightList.length>0 && this.renderTableHeader()}<th>Action</th><th>Action</th>
                         </tr>
                     </thead>
                     <tbody>

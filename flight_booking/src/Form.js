@@ -2,10 +2,11 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
-
+import { getUserAPI } from './Common';
 
 export default function Form() {
 
+const API_USER =getUserAPI();
 let history = useHistory();
 // States for registration
 const [name, setName] = useState('');
@@ -54,7 +55,7 @@ const handleSubmit = (e) => {
     {
 	    setSubmitted(true);
         setError(false);
-        axios.post('http://localhost:7072/flight/user/register',{name:name,password:password,username:email,mobile:mobile,email:email,role:'USER',status:'1'})
+        axios.post(API_USER+'flight/user/register',{name:name,password:password,username:email,mobile:mobile,email:email,role:'USER',status:'1'})
         .then(response => {
           console.log(response);   
           console.log(response.data);  

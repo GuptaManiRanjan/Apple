@@ -1,11 +1,12 @@
-import React, {Component, useState} from 'react';
-import { getUser, getUserEmail } from './Common';
+import React, {Component} from 'react';
+import { getUser, getUserEmail,getUserAPI  } from './Common';
 import {NavLink } from 'react-router-dom';
 import axios from 'axios';
 import './App.css'; 
 
 class BookingHistory extends Component{
 
+    API_USER =getUserAPI();
     user = getUser();
     userEmail = getUserEmail();
     constructor(props){
@@ -17,7 +18,6 @@ class BookingHistory extends Component{
             showing: false,
             airlineName:'',
             flightNumber:'',
-            airlineName:'',
             passengername:'',
             age:'',
             departureTime:'',
@@ -85,7 +85,7 @@ class BookingHistory extends Component{
         console.log(e.bookingId);
         var result = window.confirm("Want to cancel?");
         if(result){
-        axios.delete('http://localhost:7072/flight/ticket/delete/'+e.bookingId).then(response => {
+        axios.delete(this.API_USER+'flight/ticket/delete/'+e.bookingId).then(response => {
             console.log(response);
             alert("Ticket Cancel Succefully ...."); 
             this.bookedHistory();
@@ -98,7 +98,7 @@ class BookingHistory extends Component{
     
     bookedHistory()  {
         this.setState({ isLoading: true })
-        axios.get('http://localhost:7072/flight/ticket/list/'+this.userEmail).then(response => {            
+        axios.get(this.API_USER+'flight/ticket/list/'+this.userEmail).then(response => {            
             if (response.status===200) {
                 var bookList = response.data
                 this.setState({ bookList, isLoading: false })
@@ -118,7 +118,7 @@ class BookingHistory extends Component{
         console.log(this.pnrValue);
         var temp=[];
         this.setState({ isLoading: true })
-        axios.get('http://localhost:7072/flight/ticket/view/'+this.pnrValue).then(response => { 
+        axios.get(this.API_USER+'flight/ticket/view/'+this.pnrValue).then(response => { 
             console.log(response.data);
             if (response.status===200) {
                 temp.push(response.data);
@@ -131,7 +131,7 @@ class BookingHistory extends Component{
       }
 
     render(){
-        const { bookList, showing,flightNumber,airlineName,passengername,age,departureTime,arrivalTime,source,destination,flightDate,pnrNo,ticketPrice} = this.state
+        const { bookList, showing,flightNumber,airlineName,age,departureTime,arrivalTime,source,destination,flightDate,pnrNo,ticketPrice} = this.state
         return(
         <div class="print-parent">
                 <ul>
@@ -153,10 +153,10 @@ class BookingHistory extends Component{
                 </ul>
                     Welcome! {this.user} ({this.userEmail})<br/><br/><br/>
                     <div>
-                <table>
+                <table id='list'>
                     <thead>
                         <tr>                          
-                        {bookList.length>0 && this.renderTableHeader()}
+                        {bookList.length>0 && this.renderTableHeader()}<th>Action</th><th>Action</th>
                         </tr>
                     </thead>
                     <tbody>

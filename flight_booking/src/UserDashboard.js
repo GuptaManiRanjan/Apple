@@ -1,11 +1,13 @@
-import React, {Component, useState} from 'react';
-import { getUser, getUserEmail } from './Common';
+import React, {Component} from 'react';
+import { getUser, getUserEmail, getAdminAPI, getUserAPI } from './Common';
 import {NavLink } from 'react-router-dom';
 import axios from 'axios';
 import './App.css'; 
 
 class UserDashboard extends Component{
 
+    API_ADMIN =getAdminAPI();
+    API_USER =getUserAPI();
     constructor(props){
         super(props) 
         this.state = {
@@ -76,7 +78,7 @@ class UserDashboard extends Component{
               <td>{flight.mealType}</td>
               <td>{flight.duration}</td>
               <td>{flight.flightDate}</td>
-              <td>{flight.status}</td>
+              
               <td><button onClick ={(e)=>this.bookFlight(flight)}>Book</button></td>
             </tr>
           )
@@ -108,7 +110,7 @@ class UserDashboard extends Component{
           this.setState({showing: false }) 
         }
         else{
-          axios.get('http://localhost:7071/flight/airline/search',{ params:{source:this.setSourceCity, destination:this.setDestCity, date:this.setDate}})
+          axios.get(this.API_ADMIN+'flight/airline/search',{ params:{source:this.setSourceCity, destination:this.setDestCity, date:this.setDate}})
           .then(response => {       
                 const flightList =  response.data;
                if(flightList.length===0){
@@ -142,11 +144,11 @@ class UserDashboard extends Component{
       console.log(this.govtId)
       console.log(this.ticketBookData)
       console.log(this.ticketBookData.airlineName)
-      this.pnrGenerate="PNR"+(new Date).getUTCMilliseconds()+(new Date).getUTCMinutes()+(new Date).getUTCHours();
+      this.pnrGenerate="PNR"+(new Date()).getUTCMilliseconds()+(new Date()).getUTCMinutes()+(new Date()).getUTCHours();
       console.log(this.pnrGenerate);
       if(this.passengername!==undefined || this.age!==undefined || this.govtId!==undefined){
         this.setState({showing: false })
-        axios.post('http://localhost:7072/flight/booking/ticket',{
+        axios.post(this.API_USER+'flight/booking/ticket',{
         passengername:this.passengername,
         age:this.age,
         govtId:this.govtId,
@@ -176,7 +178,7 @@ class UserDashboard extends Component{
   }
 
     render(){
-        const { flightList, showing, isError } = this.state
+        const { flightList, showing} = this.state
         return(
 
             <div>                  
@@ -203,7 +205,7 @@ class UserDashboard extends Component{
                 <input className="search" type="button" onClick={this.searchFlight} value="Search" />
               <br></br> <br></br>
                 <div>
-                <table>
+                <table id='list'>
                     <thead>
                         <tr>                          
                         {flightList.length>0 && this.renderTableHeader()}

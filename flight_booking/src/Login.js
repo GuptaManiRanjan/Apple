@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { setUserSession, setUserEmail } from './Common';
+import { setUserSession, setUserEmail,getUserAPI } from './Common';
 import axios from 'axios';
 import {NavLink} from 'react-router-dom';
 import Button from "react-bootstrap/Button";
  
 function Login(props) {
+
+  const API_USER =getUserAPI();
   const [loading] = useState(false);
   const username = useFormInput('');
   const password = useFormInput('');
@@ -18,7 +20,7 @@ function Login(props) {
       }
       else
       {
-          axios.post('http://localhost:7072/flight/user/login', { username: username.value, password: password.value }).then(response => {
+          axios.post(API_USER+'flight/user/login', { username: username.value, password: password.value }).then(response => {
           console.log(response);
           if(response.data.msg==="Valid"){
             setUserSession('Username', response.data.name);
